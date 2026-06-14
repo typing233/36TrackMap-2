@@ -1,8 +1,9 @@
 from datetime import date
-from typing import Optional
+from enum import Enum
+from typing import Literal, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, field_validator
 
 
 class UserCreate(BaseModel):
@@ -33,8 +34,15 @@ class LocationCreate(BaseModel):
     start_date: Optional[date] = None
     end_date: Optional[date] = None
     rating: Optional[int] = None
-    visit_status: str = "planned"
+    visit_status: Literal["visited", "planned"] = "planned"
     tags: list[str] = []
+
+    @field_validator("rating")
+    @classmethod
+    def rating_range(cls, v):
+        if v is not None and (v < 1 or v > 5):
+            raise ValueError("rating must be between 1 and 5")
+        return v
 
 
 class LocationUpdate(BaseModel):
@@ -43,8 +51,15 @@ class LocationUpdate(BaseModel):
     start_date: Optional[date] = None
     end_date: Optional[date] = None
     rating: Optional[int] = None
-    visit_status: Optional[str] = None
+    visit_status: Optional[Literal["visited", "planned"]] = None
     tags: Optional[list[str]] = None
+
+    @field_validator("rating")
+    @classmethod
+    def rating_range(cls, v):
+        if v is not None and (v < 1 or v > 5):
+            raise ValueError("rating must be between 1 and 5")
+        return v
 
 
 class TagResponse(BaseModel):
